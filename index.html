@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fairgram</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#18151E">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fairgram">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #18151E;
+    --card: #211D29;
+    --card-2: #26212f;
+    --border: #37313f;
+    --ink: #F1EBE0;
+    --muted: #A79FB0;
+    --gold: #E3A857;
+    --gold-ink: #2a1f0e;
+    --sage: #8BAE8F;
+    --rose: #C98A8A;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(1200px 500px at 20% -10%, rgba(227,168,87,0.07), transparent 60%),
+      var(--bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 60px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .brand {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 6px;
+  }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .brand-mark img { width: 100%; height: 100%; display: block; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 28px; text-align: center; line-height: 1.5; }
+  .container { width: 100%; max-width: 440px; }
+
+  a { color: inherit; }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 18px; }
+  .progress-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .bar-bg { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--gold); transition: width 0.25s ease; }
+  .bar-fill.today { background: var(--sage); }
+
+  /* The deck: the focus card sits atop two offset ghost cards to suggest a stack of profiles */
+  .deck { position: relative; margin: 6px 0 18px; }
+  .deck::before, .deck::after {
+    content: '';
+    position: absolute;
+    left: 6%; right: 6%;
+    height: 100%;
+    border-radius: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    z-index: 0;
+  }
+  .deck::before { top: 10px; transform: rotate(-1.4deg); opacity: 0.7; }
+  .deck::after  { top: 18px; transform: rotate(1.6deg); opacity: 0.45; }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 24px 26px;
+    text-align: center;
+    box-shadow: 0 18px 40px -20px rgba(0,0,0,0.6);
+  }
+  .avatar {
+    width: 68px; height: 68px; border-radius: 50%;
+    background: var(--gold);
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 26px; font-weight: 600; color: var(--gold-ink);
+  }
+  .username {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 21px; font-weight: 500; margin-bottom: 6px; word-break: break-all;
+  }
+  .queue-pos { color: var(--muted); font-size: 12.5px; margin-bottom: 22px; }
+
+  .btn {
+    display: block; width: 100%; padding: 14px;
+    border-radius: 12px; border: none; font-size: 15px; font-weight: 600;
+    font-family: inherit;
+    cursor: pointer; margin-bottom: 10px; text-decoration: none;
+    transition: transform 0.08s ease;
+  }
+  .btn-open { background: var(--gold); color: var(--gold-ink); }
+  .btn-done { background: var(--sage); color: #14201a; }
+  .btn-skip { background: transparent; color: var(--ink); border: 1px solid var(--border); }
+  .btn-undo { background: transparent; color: var(--muted); border: 1px solid var(--border); font-size: 13px; padding: 10px; }
+  .btn:active { transform: scale(0.98); }
+
+  .hint { text-align: center; color: var(--muted); font-size: 12.5px; margin: 6px 0 26px; line-height: 1.7; }
+  kbd { background: var(--border); padding: 2px 7px; border-radius: 5px; font-size: 11px; font-family: 'Inter', sans-serif; }
+
+  .toolbar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .toolbar button {
+    flex: 1; padding: 9px; border-radius: 10px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); font-size: 12.5px; cursor: pointer;
+    font-family: inherit;
+  }
+  .toolbar button.active { background: var(--card-2); border-color: var(--gold); color: var(--ink); }
+
+  .batch-settings { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 20px; font-size: 13px; color: var(--muted); }
+  .batch-settings input { width: 56px; background: var(--card-2); border: 1px solid var(--border); color: var(--ink); border-radius: 8px; padding: 5px 8px; text-align: center; font-family: inherit; }
+
+  .list-view { display: none; }
+  .list-view.show { display: block; }
+  .search-box {
+    width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card-2); color: var(--ink); margin-bottom: 12px; font-size: 14px; font-family: inherit;
+  }
+  .list-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 4px; border-bottom: 1px solid var(--border); font-size: 14px;
+  }
+  .list-item.done { color: var(--sage); }
+  .list-item.skip { color: var(--muted); text-decoration: line-through; }
+  .list-item a { text-decoration: none; }
+  .status-tag { font-size: 10.5px; padding: 3px 9px; border-radius: 10px; background: var(--border); color: var(--muted); }
+
+  .done-screen { text-align: center; padding: 44px 24px; }
+  .done-screen .big { font-family: 'Fraunces', Georgia, serif; font-size: 30px; margin-bottom: 10px; font-style: italic; }
+
+  .export-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    padding: 11px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 8px;
+    font-family: inherit;
+  }
+  .loading { text-align: center; color: var(--muted); padding: 60px 0; }
+
+  /* Upload screen */
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    text-align: left;
+  }
+  .panel + .panel { margin-top: 14px; }
+  .field-label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--muted); }
+  input[type="file"] {
+    width: 100%; margin-bottom: 16px; color: var(--ink); font-size: 13px;
+    font-family: inherit;
+  }
+  input[type="file"]::file-selector-button {
+    background: var(--card-2); color: var(--ink); border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 12px; margin-right: 10px; cursor: pointer; font-family: inherit;
+  }
+
+  details.tutorial { margin-bottom: 14px; }
+  details.tutorial summary {
+    cursor: pointer; font-size: 14px; font-weight: 500; padding: 4px 0;
+    list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  details.tutorial summary::-webkit-details-marker { display: none; }
+  details.tutorial summary::before {
+    content: '›'; display: inline-block; transition: transform 0.15s ease;
+    color: var(--gold); font-size: 18px; line-height: 1;
+  }
+  details.tutorial[open] summary::before { transform: rotate(90deg); }
+  .tutorial ol { margin: 12px 0 0; padding-left: 22px; }
+  .tutorial li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 8px; }
+  .tutorial li b { color: var(--ink); font-weight: 600; }
+  .tutorial li:last-child { margin-bottom: 0; }
+
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--muted); font-size: 12px; margin: 18px 0;
+  }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .privacy-note { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 18px; line-height: 1.6; }
+
+  /* Custom modal (native confirm/alert are unreliable in sandboxed previews) */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(10,9,13,0.72);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; z-index: 100;
+  }
+  .modal-box {
+    background: var(--card-2); border: 1px solid var(--border); border-radius: 18px;
+    padding: 24px; max-width: 380px; width: 100%;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,0.7);
+  }
+  .modal-title {
+    font-family: 'Fraunces', Georgia, serif; font-size: 18px; font-weight: 600; margin-bottom: 10px;
+  }
+  .modal-body { margin-bottom: 18px; }
+  .modal-actions { display: flex; flex-direction: column; gap: 8px; }
+  .modal-actions .btn { margin-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-box">
+      <div id="modalTitle" class="modal-title"></div>
+      <div id="modalBody" class="modal-body"></div>
+      <div id="modalActions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <div class="brand">
+    <div class="brand-mark"><img src="icon-192.png" alt="Fairgram logo"></div>
+    <h1>Fairgram</h1>
+  </div>
+  <p class="subtitle">Because it's only fair they follow you back.</p>
+
+  <div id="loading" class="loading">Loading&hellip;</div>
+
+  <div id="uploadScreen" style="display:none">
+    <details class="tutorial panel" open>
+      <summary>How to get your Instagram data</summary>
+      <ol>
+        <li>Open Instagram and go to your <b>profile</b>, then the menu (☰)</li>
+        <li>Tap <b>Settings and privacy</b> → <b>Accounts Center</b> → <b>Your information and permissions</b></li>
+        <li>Tap <b>Download your information</b>, then <b>Some of your information</b></li>
+        <li>Select only <b>Followers and following</b></li>
+        <li>Set format to <b>JSON</b> and date range to <b>All time</b>, then submit</li>
+        <li>Instagram will notify you when it's ready (minutes to a couple of days) &mdash; download the ZIP and unzip it</li>
+        <li>Find <b>followers_1.json</b> and <b>following.json</b> inside <span style="white-space:nowrap">connections/followers_and_following/</span></li>
+      </ol>
+    </details>
+
+    <div class="panel">
+      <span class="field-label">Followers file (followers_1.json)</span>
+      <input type="file" id="followersInput" accept=".json">
+      <span class="field-label">Following file (following.json)</span>
+      <input type="file" id="followingInput" accept=".json">
+      <button class="btn btn-open" id="processBtn">Build my list</button>
+      <p id="uploadError" style="color:var(--rose); font-size:13px; display:none; margin-top:4px;"></p>
+    </div>
+
+    <div class="divider">or</div>
+
+    <div class="panel">
+      <span class="field-label">Already have a progress export from this tool? Restore it to pick up where you left off.</span>
+      <input type="file" id="restoreInput" accept=".csv">
+      <button class="btn btn-skip" id="restoreBtn">Restore from CSV</button>
+      <p id="restoreError" style="color:var(--rose); font-size:13px; display:none; margin-top:4px;"></p>
+    </div>
+
+    <p class="privacy-note">Everything is processed right here in your browser &mdash; your files are never uploaded anywhere.</p>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="progress-wrap">
+      <div class="progress-row">
+        <span id="overallLabel">0 / 0 reviewed</span>
+        <span id="pctLabel">0%</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="overallBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="batch-settings">
+      Daily batch size:
+      <input type="number" id="batchSize" min="10" max="2100" step="10" value="100">
+      <span id="batchLabel">0 / 100 today</span>
+    </div>
+    <div class="bar-bg" style="margin-bottom:20px;">
+      <div class="bar-fill today" id="batchBar" style="width:0%"></div>
+    </div>
+
+    <div class="toolbar">
+      <button id="tabFocus" class="active">Focus mode</button>
+      <button id="tabList">Full list</button>
+    </div>
+
+    <!-- FOCUS MODE -->
+    <div id="focusView">
+      <div class="deck">
+        <div id="card" class="card">
+          <div class="avatar" id="avatarLetter">?</div>
+          <div class="username" id="currentUsername">&mdash;</div>
+          <div class="queue-pos" id="queuePos"></div>
+          <a class="btn btn-open" id="openBtn" href="#" target="_blank" rel="noopener">Open profile on Instagram &rarr;</a>
+          <button class="btn btn-done" id="doneBtn">Marked unfollowed ✓  (Space)</button>
+          <button class="btn btn-skip" id="skipBtn">Skip &mdash; keep following  (S)</button>
+          <button class="btn btn-undo" id="undoBtn">&larr; Undo last action  (Backspace)</button>
+        </div>
+      </div>
+      <p class="hint">
+        Tap <kbd>Open profile</kbd>, hit unfollow in the Instagram app, come back, press <kbd>Space</kbd>.<br>
+        Shortcuts: <kbd>Space</kbd> mark done &nbsp;•&nbsp; <kbd>S</kbd> skip &nbsp;•&nbsp; <kbd>Backspace</kbd> undo
+      </p>
+      <div id="doneScreen" class="done-screen" style="display:none">
+        <div class="big">All caught up</div>
+        <div id="doneMsg" style="font-weight:500; margin-bottom:6px;"></div>
+        <div style="color:var(--muted); font-size:13px;">Come back tomorrow for the next batch, or raise your daily batch size above.</div>
+      </div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div id="listView" class="list-view">
+      <input type="text" class="search-box" id="searchBox" placeholder="Search username&hellip;">
+      <div class="toolbar">
+        <button id="filterAll" class="active">All</button>
+        <button id="filterPending">Pending</button>
+        <button id="filterDone">Done</button>
+        <button id="filterSkip">Skipped</button>
+      </div>
+      <div id="listContainer"></div>
+    </div>
+
+    <button class="export-btn" id="exportBtn">Export remaining list as CSV</button>
+    <button class="export-btn" id="reimportBtn">Start over (back to import screen)</button>
+  </div>
+</div>
+
+<script>
+let ALL_USERNAMES = [];
+
+const STORAGE_KEY = 'unfollow_progress_v2';
+const DATA_KEY = 'unfollow_data_v1';
+let progress = {}; // username -> 'done' | 'skip'
+let order = []; // stable order (order encountered in export = most-recently-followed first), set once data is loaded/imported
+let currentIndex = 0;
+let batchSize = 100;
+let todayDoneCount = 0; // actions taken in this session counted toward today's batch
+let listFilter = 'all';
+let lastAction = null; // { username, status }
+
+const $ = id => document.getElementById(id);
+
+async function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      progress = parsed.progress || {};
+      batchSize = parsed.batchSize || 100;
+      todayDoneCount = parsed.todayDoneCount || 0;
+    }
+  } catch (e) {
+    progress = {};
+  }
+}
+
+async function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ progress, batchSize, todayDoneCount }));
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+function firstAvatarLetter(name) {
+  return name.charAt(0).toUpperCase();
+}
+
+function nextPendingIndex(fromIndex) {
+  for (let i = fromIndex; i < order.length; i++) {
+    if (!progress[order[i]]) return i;
+  }
+  return -1;
+}
+
+function renderFocus() {
+  const idx = nextPendingIndex(0);
+  $('doneScreen').style.display = 'none';
+  $('card').style.display = 'block';
+  $('undoBtn').style.display = lastAction ? 'block' : 'none';
+
+  if (idx === -1) {
+    $('card').style.display = 'none';
+    $('doneScreen').style.display = 'block';
+    $('doneMsg').textContent = `All ${order.length} accounts reviewed. Nice work.`;
+    return;
+  }
+
+  const doneTotal = Object.keys(progress).length;
+  const batchRemaining = batchSize - todayDoneCount;
+  if (batchRemaining <= 0) {
+    $('card').style.display = 'none';
+    $('doneScreen').style.display = 'block';
+    $('doneMsg').textContent = `Today's batch of ${batchSize} is done. ${order.length - doneTotal} left overall.`;
+    return;
+  }
+
+  currentIndex = idx;
+  const uname = order[idx];
+  $('currentUsername').textContent = '@' + uname;
+  $('avatarLetter').textContent = firstAvatarLetter(uname);
+  $('openBtn').href = 'https://www.instagram.com/' + uname;
+  $('queuePos').textContent = `${doneTotal + 1} of ${order.length} · ${todayDoneCount}/${batchSize} today`;
+}
+
+function markCurrent(status) {
+  const uname = order[currentIndex];
+  if (!uname) return;
+  progress[uname] = status;
+  lastAction = { username: uname, status };
+  if (status === 'done') todayDoneCount++;
+  saveProgress();
+  updateAll();
+}
+
+function undoLast() {
+  if (!lastAction) return;
+  delete progress[lastAction.username];
+  if (lastAction.status === 'done' && todayDoneCount > 0) todayDoneCount--;
+  lastAction = null;
+  saveProgress();
+  updateAll();
+}
+
+function updateProgressBars() {
+  const doneTotal = Object.keys(progress).length;
+  const pct = order.length ? Math.round((doneTotal / order.length) * 100) : 0;
+  $('overallLabel').textContent = `${doneTotal} / ${order.length} reviewed`;
+  $('pctLabel').textContent = pct + '%';
+  $('overallBar').style.width = pct + '%';
+
+  const batchPct = Math.min(100, Math.round((todayDoneCount / batchSize) * 100));
+  $('batchLabel').textContent = `${todayDoneCount} / ${batchSize} today`;
+  $('batchBar').style.width = batchPct + '%';
+  $('batchSize').value = batchSize;
+}
+
+function renderList() {
+  const search = $('searchBox').value.trim().toLowerCase();
+  const container = $('listContainer');
+  container.innerHTML = '';
+  let shown = 0;
+  for (const uname of order) {
+    const status = progress[uname] || 'pending';
+    if (listFilter !== 'all' && status !== listFilter) continue;
+    if (search && !uname.toLowerCase().includes(search)) continue;
+    shown++;
+    if (shown > 300) continue;
+    const row = document.createElement('div');
+    row.className = 'list-item' + (status !== 'pending' ? ' ' + status : '');
+    row.innerHTML = `<a href="https://www.instagram.com/${uname}" target="_blank" rel="noopener">@${uname}</a><span class="status-tag">${status}</span>`;
+    container.appendChild(row);
+  }
+  if (shown === 0) {
+    container.innerHTML = '<div style="color:var(--muted); text-align:center; padding:20px; font-size:13px;">No matches.</div>';
+  } else if (shown > 300) {
+    const note = document.createElement('div');
+    note.style.cssText = 'color:var(--muted); text-align:center; padding:12px; font-size:12px;';
+    note.textContent = 'Showing first 300 matches — narrow your search to see more.';
+    container.appendChild(note);
+  }
+}
+
+function updateAll() {
+  updateProgressBars();
+  renderFocus();
+  renderList();
+}
+
+function openModal({ title, bodyHTML, buttons }) {
+  $('modalTitle').textContent = title;
+  $('modalBody').innerHTML = bodyHTML;
+  const actions = $('modalActions');
+  actions.innerHTML = '';
+  buttons.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = b.className || 'btn btn-skip';
+    btn.textContent = b.label;
+    btn.addEventListener('click', () => {
+      if (b.onClick) b.onClick();
+      if (!b.keepOpen) closeModal();
+    });
+    actions.appendChild(btn);
+  });
+  $('modalOverlay').style.display = 'flex';
+}
+
+function closeModal() {
+  $('modalOverlay').style.display = 'none';
+}
+
+$('modalOverlay').addEventListener('click', (e) => {
+  if (e.target === $('modalOverlay')) closeModal();
+});
+
+function exportCSV() {
+  let csv = 'username,status,profile_url\n';
+  for (const uname of order) {
+    const status = progress[uname] || 'pending';
+    csv += `${uname},${status},https://www.instagram.com/${uname}\n`;
+  }
+
+  // Try a real file download first — this works once the tool is hosted on its own page.
+  try {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'fairgram_progress.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (e) {
+    // ignore — the modal below covers this case
+  }
+
+  // Always also offer a copyable version, since sandboxed previews can silently block downloads.
+  openModal({
+    title: 'Your progress export',
+    bodyHTML: `
+      <p style="color:var(--muted); font-size:13px; margin-bottom:10px; line-height:1.5;">
+        A download should have started. If it didn't, copy the text below and save it into a file named <code>fairgram_progress.csv</code>.
+      </p>
+      <textarea id="csvTextArea" readonly
+        style="width:100%; height:160px; background:var(--card); color:var(--ink); border:1px solid var(--border); border-radius:10px; padding:10px; font-family:monospace; font-size:12px;">${csv}</textarea>
+    `,
+    buttons: [
+      {
+        label: 'Copy to clipboard', className: 'btn btn-open', keepOpen: true, onClick: () => {
+          const ta = document.getElementById('csvTextArea');
+          ta.select();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(csv).catch(() => document.execCommand('copy'));
+          } else {
+            document.execCommand('copy');
+          }
+        }
+      },
+      { label: 'Close', className: 'btn btn-skip' }
+    ]
+  });
+}
+
+// Event wiring
+$('doneBtn').addEventListener('click', () => markCurrent('done'));
+$('skipBtn').addEventListener('click', () => markCurrent('skip'));
+$('undoBtn').addEventListener('click', undoLast);
+$('exportBtn').addEventListener('click', exportCSV);
+$('openBtn').addEventListener('click', () => { /* just opens link, marking is manual */ });
+
+$('batchSize').addEventListener('change', (e) => {
+  batchSize = Math.max(10, parseInt(e.target.value) || 100);
+  saveProgress();
+  updateAll();
+});
+
+$('tabFocus').addEventListener('click', () => {
+  $('tabFocus').classList.add('active');
+  $('tabList').classList.remove('active');
+  $('focusView').style.display = 'block';
+  $('listView').classList.remove('show');
+});
+$('tabList').addEventListener('click', () => {
+  $('tabList').classList.add('active');
+  $('tabFocus').classList.remove('active');
+  $('focusView').style.display = 'none';
+  $('listView').classList.add('show');
+  renderList();
+});
+
+[['filterAll','all'],['filterPending','pending'],['filterDone','done'],['filterSkip','skip']].forEach(([id, val]) => {
+  $(id).addEventListener('click', () => {
+    document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
+    $(id).classList.add('active');
+    listFilter = val;
+    renderList();
+  });
+});
+$('searchBox').addEventListener('input', renderList);
+
+document.addEventListener('keydown', (e) => {
+  if (document.activeElement === $('searchBox') || document.activeElement === $('batchSize')) return;
+  if ($('focusView').style.display === 'none') return;
+  if (e.code === 'Space') { e.preventDefault(); markCurrent('done'); }
+  else if (e.key.toLowerCase() === 's') { markCurrent('skip'); }
+  else if (e.key === 'Backspace') { e.preventDefault(); undoLast(); }
+});
+
+// --- Import / parsing logic ---
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+function extractUsernamesFromFollowers(json) {
+  const arr = Array.isArray(json) ? json : (json.string_list_data ? [json] : []);
+  const set = new Set();
+  for (const entry of arr) {
+    for (const s of (entry.string_list_data || [])) {
+      let uname = s.value;
+      if (!uname && s.href) uname = s.href.replace(/\/$/, '').split('/').pop();
+      if (uname) set.add(uname);
+    }
+  }
+  return set;
+}
+
+function extractOrderedUsernamesFromFollowing(json) {
+  const arr = json.relationships_following || (Array.isArray(json) ? json : []);
+  const ordered = [];
+  const seen = new Set();
+  for (const entry of arr) {
+    let uname = entry.title;
+    if (!uname) {
+      for (const s of (entry.string_list_data || [])) {
+        if (s.href) { uname = s.href.replace(/\/$/, '').split('/').pop(); break; }
+      }
+    }
+    if (uname && !seen.has(uname)) {
+      seen.add(uname);
+      ordered.push(uname);
+    }
+  }
+  return ordered;
+}
+
+async function handleProcessFiles() {
+  const errEl = $('uploadError');
+  errEl.style.display = 'none';
+  const followersFile = $('followersInput').files[0];
+  const followingFile = $('followingInput').files[0];
+  if (!followersFile || !followingFile) {
+    errEl.textContent = 'Please select both files.';
+    errEl.style.display = 'block';
+    return;
+  }
+  try {
+    const [followersText, followingText] = await Promise.all([
+      readFileAsText(followersFile), readFileAsText(followingFile)
+    ]);
+    const followersJson = JSON.parse(followersText);
+    const followingJson = JSON.parse(followingText);
+
+    const followersSet = extractUsernamesFromFollowers(followersJson);
+    const followingOrdered = extractOrderedUsernamesFromFollowing(followingJson);
+
+    if (followingOrdered.length === 0) {
+      errEl.textContent = "Couldn't find any accounts in the following file — make sure you picked the right file (following.json).";
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const notFollowingBack = followingOrdered.filter(u => !followersSet.has(u));
+
+    ALL_USERNAMES = notFollowingBack;
+    order = [...ALL_USERNAMES];
+    progress = {};
+    todayDoneCount = 0;
+    lastAction = null;
+
+    localStorage.setItem(DATA_KEY, JSON.stringify(ALL_USERNAMES));
+    await saveProgress();
+
+    showApp();
+  } catch (e) {
+    errEl.textContent = 'Could not read those files — make sure they are the unmodified JSON exports from Instagram.';
+    errEl.style.display = 'block';
+    console.error(e);
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) { // skip header
+    const parts = lines[i].split(',');
+    if (parts.length >= 2) {
+      rows.push({ username: parts[0].trim(), status: parts[1].trim() });
+    }
+  }
+  return rows;
+}
+
+async function handleRestoreCSV() {
+  const errEl = $('restoreError');
+  errEl.style.display = 'none';
+  const file = $('restoreInput').files[0];
+  if (!file) {
+    errEl.textContent = 'Please select a CSV file.';
+    errEl.style.display = 'block';
+    return;
+  }
+  try {
+    const text = await readFileAsText(file);
+    const rows = parseCSV(text);
+    if (rows.length === 0) {
+      errEl.textContent = "Couldn't find any rows in that file — is this a CSV exported from this tool?";
+      errEl.style.display = 'block';
+      return;
+    }
+
+    ALL_USERNAMES = rows.map(r => r.username);
+    order = [...ALL_USERNAMES];
+    progress = {};
+    todayDoneCount = 0;
+    lastAction = null;
+    for (const r of rows) {
+      if (r.status === 'done' || r.status === 'skip') {
+        progress[r.username] = r.status;
+        if (r.status === 'done') todayDoneCount++;
+      }
+    }
+    // don't count old sessions' work against today's fresh batch limit
+    todayDoneCount = 0;
+
+    localStorage.setItem(DATA_KEY, JSON.stringify(ALL_USERNAMES));
+    await saveProgress();
+
+    showApp();
+  } catch (e) {
+    errEl.textContent = 'Could not read that file — make sure it is a CSV exported from this tool.';
+    errEl.style.display = 'block';
+    console.error(e);
+  }
+}
+
+function showUploadScreen() {
+  $('loading').style.display = 'none';
+  $('app').style.display = 'none';
+  $('uploadScreen').style.display = 'block';
+}
+
+function showApp() {
+  $('loading').style.display = 'none';
+  $('uploadScreen').style.display = 'none';
+  $('app').style.display = 'block';
+  updateAll();
+}
+
+$('processBtn').addEventListener('click', handleProcessFiles);
+$('restoreBtn').addEventListener('click', handleRestoreCSV);
+function doStartOver() {
+  localStorage.removeItem(DATA_KEY);
+  localStorage.removeItem(STORAGE_KEY);
+  ALL_USERNAMES = [];
+  order = [];
+  progress = {};
+  todayDoneCount = 0;
+  lastAction = null;
+  $('followersInput').value = '';
+  $('followingInput').value = '';
+  showUploadScreen();
+}
+
+$('reimportBtn').addEventListener('click', () => {
+  openModal({
+    title: 'Start over?',
+    bodyHTML: `<p style="color:var(--muted); font-size:14px; line-height:1.5;">
+      This clears your current list and progress and takes you back to the import screen.
+      Export a CSV first if you want to keep a backup.
+    </p>`,
+    buttons: [
+      { label: 'Cancel', className: 'btn btn-skip' },
+      { label: 'Start over', className: 'btn btn-done', onClick: doStartOver }
+    ]
+  });
+});
+
+(async function init() {
+  const savedData = localStorage.getItem(DATA_KEY);
+  if (savedData) {
+    try {
+      ALL_USERNAMES = JSON.parse(savedData);
+      order = [...ALL_USERNAMES];
+      await loadProgress();
+      showApp();
+      return;
+    } catch (e) {
+      // fall through to upload screen if saved data is corrupt
+    }
+  }
+  showUploadScreen();
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed', err));
+  });
+}
+</script>
+</body>
+</html>
