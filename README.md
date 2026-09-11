@@ -6,6 +6,10 @@
 <p align="center"><i>Because it's only fair they follow you back.</i></p>
 
 <p align="center">
+  <a href="https://paul0o7.github.io/FairGram/"><b>Try Fairgram →</b></a>
+</p>
+
+<p align="center">
   A small, private tool for finding the Instagram accounts that don't follow you back —
   and working through them at your own pace, without automating a single click on your account.
 </p>
@@ -51,20 +55,21 @@ Everything runs client-side, in your browser:
 
 ## Privacy
 
-Your Instagram data never leaves your device. There's no server in this project at all — it's a static site, so whatever GitHub Pages (or wherever you host it) serves is the entire application.
+Your Instagram data never leaves your device. There's no server in this project at all — it's a static site, so whatever GitHub Pages serves is the entire application.
 
 ## A note on Instagram's terms
 
 Fairgram is a **manual review aid**, not an automation tool. It doesn't unfollow anyone for you, and it doesn't interact with Instagram's app or API in any way beyond opening a profile link, the same as tapping a link anywhere else on the web. The actual unfollow action always happens by hand, in the real Instagram app.
 
-## Running it yourself
-Open up the github page of this website and add it to your home-screen for easy access!
+## Using it
 
-This is a static site — no build step, no dependencies.
+**[paul0o7.github.io/FairGram](https://paul0o7.github.io/FairGram/)** — open it on your phone and add it to your home screen for one-tap access, just like a native app.
 
-1. Clone or download this repo
-2. Open `index.html` in a browser, or host the whole folder anywhere that serves static files (GitHub Pages, Netlify, etc.)
-3. On first load, upload your two export files and start reviewing
+No build step, no dependencies, nothing to install beyond that:
+
+1. Visit the link above (or clone this repo and open `index.html` yourself)
+2. On first load, upload your two export files from Instagram's export
+3. Start reviewing
 
 ---
 
