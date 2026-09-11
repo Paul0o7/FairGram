@@ -58,6 +58,7 @@ Your Instagram data never leaves your device. There's no server in this project 
 Fairgram is a **manual review aid**, not an automation tool. It doesn't unfollow anyone for you, and it doesn't interact with Instagram's app or API in any way beyond opening a profile link, the same as tapping a link anywhere else on the web. The actual unfollow action always happens by hand, in the real Instagram app.
 
 ## Running it yourself
+Open up the github page of this website and add it to your home-screen for easy access!
 
 This is a static site — no build step, no dependencies.
 
